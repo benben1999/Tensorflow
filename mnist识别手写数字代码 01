@@ -1,0 +1,45 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Mar  3 17:08:06 2019
+
+@author: lenovo
+"""
+
+import numpy as np
+import tensorflow as tf
+#引入数据
+from tensorflow.examples.tutorials.mnist import input_data
+
+mnist=input_data.read_data_sets("MNIST_DATA/",one_hot=True)      #此处使用了one-hot 编码，将标签转化为向量，是机器学习界的常用方式
+
+train_data = mnist.train.images  # Returns np.array
+train_labels = np.asarray(mnist.train.labels, dtype=np.int32)
+eval_data = mnist.test.images  # Returns np.array
+eval_labels = np.asarray(mnist.test.labels, dtype=np.int32)
+#搭建神经网络，把所有的操作都告诉tensorflow，让它形成一个计算图
+x = tf.placeholder("float",[None,784])
+w=tf.Variable(tf.zeros([784,10]))
+b=tf.Variable(tf.zeros([10]))
+
+y = tf.nn.softmax(tf.matmul(x,w)+b)
+
+y_=tf.placeholder("float",[None,10])
+#选择算法
+cross_entropy = -tf.reduce_sum(y_*tf.log(y))
+
+train_step = tf.train.GradientDescentOptimizer(0.01).minimize(cross_entropy)
+#进行训练
+init = tf.initialize_all_variables()
+
+sess = tf.Session()
+sess.run(init)
+
+for i in range(1000):
+    batch_xs,batch_ys = mnist.train.next_batch(100) # 批处理 随机梯度下降 stochastistic gradient descent
+    sess.run(train_step , feed_dict = {x:batch_xs,y_:batch_ys})
+
+correct_prediction = tf.equal(tf.argmax(y,1),tf.argmax(y_,1))
+
+accuracy = tf.reduce_mean(tf.cast(correct_prediction,"float"))
+
+print (sess.run(accuracy, feed_dict={x: eval_data , y_: eval_labels}))
