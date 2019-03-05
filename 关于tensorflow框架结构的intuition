@@ -1,0 +1,29 @@
+import tensorflow as tf
+import numpy as np
+
+x_data=np.random.rand(100).astype(np.float32)
+y_data=x_data*0.1+0.3
+
+Weights=tf.Variable(tf.random_uniform([1],-1.0,1.0)) #创建张量
+biases=tf.Variable(tf.zeros([1])) #创建张量
+
+y=Weights*x_data+biases #创建张量
+
+loss=tf.reduce_mean(tf.square(y-y_data)) #创建张量
+
+optimizer=tf.train.GradientDescentOptimizer(0.5)
+
+train = optimizer.minimize(loss)  #一层套一层的数据流，了不起
+#要最小化loss，就要最小化y与y_data的差距，就要优化参数，层层优化，知道达到最终的目的
+#我们要优化一个参数，可以通过优化别的东西来间接优化它们，妙哉
+
+init=tf.global_variables_initializer()
+
+sess=tf.Session()
+
+sess.run(init)
+
+for step in range(200):
+    sess.run(train)
+    if step % 20 == 0:
+        print(step,sess.run(Weights),sess.run(biases))
