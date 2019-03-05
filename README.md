@@ -1,4 +1,3 @@
 # Tensorflow-
-本项目为Tensorflow入门，简单实现基于mnist数据集的手写数字识别操作
-将重心放在数据的preprocessing，以便后续将数据正确放进tensorflow的框架中
+本项目为tensorflow入门，记录了我的各个tensorflow项目
 
