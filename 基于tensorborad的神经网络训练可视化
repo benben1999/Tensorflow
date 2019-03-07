@@ -61,6 +61,8 @@ tensorflow 中的 summary负责图片测绘制与存储
 3在cmd中输入 tensorboard --logdir "  /  /  /  "
 
 4输入网址即可
+
+http://LAPTOP-5K5TBN82:6006
        
        
     
