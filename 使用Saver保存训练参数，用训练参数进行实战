@@ -1,0 +1,100 @@
+具体流程：
+1保存：
+训练开始前：saver = tf.train.Saver()
+训练结束后：save_path = saver.save(sess,'此处自己想一个地址名'）
+注：此处的save_path是一个string型变量，专门由于存储地址的值
+
+2应用保存的参数：
+
+将训练用的代码复制粘贴到新的文件，删掉训练的过程
+
+添加代码
+saver = tf.train.Saver()
+
+sess= tf.Session()
+
+ckpt_path = '训练时存储的地址'
+
+saver.restore(sess,ckpt_path)
+
+此时，变量已经全部被赋予了明确的值，可以用这些值做预测
+
+注：
+1如果要应用保存的参数，两个文件中的参数必须都有name，且name必须相同
+2第二个文件run之前，必须restart kernel
+
+
+import tensorflow as tf
+from tensorflow.examples.tutorials.mnist import input_data
+
+mnist = input_data.read_data_sets('MNIST_data',one_hot = True)
+
+def compute_accuracy(v_xs, v_ys):
+    global prediction
+    y_pre = sess.run(prediction, feed_dict={xs: v_xs})
+    correct_prediction = tf.equal(tf.argmax(y_pre,1), tf.argmax(v_ys,1))
+    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+    result = sess.run(accuracy, feed_dict={xs: v_xs, ys: v_ys})
+    return result
+
+def weight_variable(shape,www=None):
+    initial = tf.truncated_normal(shape,stddev=0.1)
+    return tf.Variable(initial,name=www)
+def bias_variable(shape,bbb=None):
+    initial = tf.constant(0.1,shape = shape) #编程时，遇到一个变量，要考虑它的shape问题
+    return tf.Variable(initial,name=bbb)
+def conv2d(x,W):
+    return tf.nn.conv2d(x,W,strides=[1,1,1,1],padding = 'SAME')
+def max_pool_2x2(x):
+    return tf.nn.max_pool(x,ksize = [1,2,2,1],strides = [1,2,2,1],padding = 'SAME')    
+
+xs = tf.placeholder(tf.float32,[None,784])
+ys = tf.placeholder(tf.float32,[None,10])
+
+keep_prob = tf.placeholder(tf.float32)
+#卷积层的输入为28×28，输出为32个28×28
+#为什么是32个呢？因为计算机需要进行多次卷积操作，这样才能看懂图像到底是什么意思
+x_image = tf.reshape(xs,[-1,28,28,1])
+
+#最开始有1个，现在有32个
+W_conv1 = weight_variable([5,5,1,32],"W1")
+
+b_conv1 = bias_variable([32],"B1")
+
+h_conv1 = tf.nn.relu(conv2d(x_image,W_conv1)+b_conv1)
+#池化层输出变为32个14×14
+h_pool1 = max_pool_2x2(h_conv1) 
+W_conv2 = weight_variable([5,5,32,64],"W2")#最开始有32个，现在有64个
+b_conv2 = bias_variable([64],"B2")
+
+h_conv2 = tf.nn.relu(conv2d(h_pool1,W_conv2)+b_conv2)
+
+h_pool2 = max_pool_2x2(h_conv2)
+
+h_pool2_flat = tf.reshape(h_pool2,[-1,7*7*64])
+
+W_fc1 = weight_variable([7*7*64,1024],"w1")
+b_fc1 = bias_variable([1024],"b1")
+
+h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat,W_fc1)+b_fc1)
+
+W_fc2 = weight_variable([1024,10],"w2")
+b_fc2 = bias_variable([10],"b2")
+
+prediction = tf.nn.softmax(tf.matmul(h_fc1,W_fc2)+b_fc2)
+
+saver = tf.train.Saver()
+
+sess= tf.Session()
+
+ckpt_path = 'my_net/save_net.ckpt'
+
+saver.restore(sess,ckpt_path)
+
+print("Model restored")
+
+print("W1")
+
+print(sess.run(W_conv1))
+
+print(compute_accuracy(mnist.test.images[:1000], mnist.test.labels[:1000]))
